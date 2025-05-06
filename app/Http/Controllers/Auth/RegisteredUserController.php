@@ -11,15 +11,33 @@ use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Validation\Rules;
 use Illuminate\View\View;
+use App\Models\System;
+use Illuminate\Support\Facades\Session;
+
 
 class RegisteredUserController extends Controller
 {
     /**
      * Display the registration view.
      */
-    public function create(): View
+    public function create(Request $request): View|RedirectResponse
     {
-        return view('auth.register');
+        if (empty($ref)) {
+            Session::flash('error', 'É necessário ter com um patrocinador.');
+            return redirect()->route('login');
+        }
+    
+        $sponsor = User::where('username', $ref)->first();
+    
+        if (!$sponsor) {
+            Session::flash('error', 'O patrocinador informado não existe.');
+            return redirect()->route('login');
+        }
+    
+        return view('auth.register', [
+            'ref' => $ref,
+            'system_name' => System::where('key', 'system_name')->value('value') ?? 'DollarMillon20'
+        ]);
     }
 
     /**
@@ -31,15 +49,16 @@ class RegisteredUserController extends Controller
     {
         $request->validate([
             'name' => ['required', 'string', 'max:255'],
-            'email' => ['required', 'string', 'lowercase', 'email', 'max:255', 'unique:'.User::class],
+            'username' => ['required', 'string', 'max:255', 'unique:'.User::class],
             'password' => ['required', 'confirmed', Rules\Password::defaults()],
         ]);
-
+        
         $user = User::create([
             'name' => $request->name,
-            'email' => $request->email,
+            'username' => $request->username,
             'password' => Hash::make($request->password),
         ]);
+        
 
         event(new Registered($user));
 

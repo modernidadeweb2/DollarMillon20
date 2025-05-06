@@ -33,6 +33,23 @@ class User extends Authenticatable
         'remember_token',
     ];
 
+    public function balance()
+    {
+        return $this->hasOne(Balance::class);
+    }
+
+    // Usuário que indicou este
+    public function sponsor()
+    {
+        return $this->belongsTo(User::class, 'sponsor_id');
+    }
+
+    // Usuários indicados por este
+    public function children()
+    {
+        return $this->hasMany(User::class, 'sponsor_id');
+    }
+
     /**
      * Get the attributes that should be cast.
      *

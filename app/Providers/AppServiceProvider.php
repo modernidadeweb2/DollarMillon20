@@ -2,6 +2,9 @@
 
 namespace App\Providers;
 
+use App\Models\System;
+use Illuminate\Support\Facades\View;
+use App\Helpers\SystemHelper;
 use Illuminate\Support\ServiceProvider;
 
 class AppServiceProvider extends ServiceProvider
@@ -19,6 +22,13 @@ class AppServiceProvider extends ServiceProvider
      */
     public function boot(): void
     {
-        //
+        $settings = System::pluck('value', 'key')->toArray();
+
+        View::share([
+            'meta_description' => $settings['meta_description'] ?? '',
+            'meta_tags' => $settings['meta_tags'] ?? '',
+            'system_name' => $settings['system_name'] ?? '',
+            'title' => $settings['system_name'] ?? config('app.name'),
+        ]);
     }
 }
