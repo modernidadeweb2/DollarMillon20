@@ -5,6 +5,7 @@ namespace Database\Seeders;
 use App\Models\User;
 // use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 use Illuminate\Database\Seeder;
+use App\Models\Packs;  // Corrigido aqui para "Packs" com "P" maiúsculo
 
 class DatabaseSeeder extends Seeder
 {
@@ -23,5 +24,8 @@ class DatabaseSeeder extends Seeder
         $this->call([
             SystemSeeder::class,
         ]);
+
+        $this->call(PackSeeder::class);
+
     }
 }

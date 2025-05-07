@@ -38,7 +38,7 @@
       <div class="card">
         <div class="card-header">
           <div>
-            <h2 class="fw-bolder mb-0">R$ 0,00</h2>
+          <h2 class="fw-bolder mb-0">R$ {{ number_format($balance, 2, ',', '.') }}</h2>
             <p class="card-text">Saldo</p>
           </div>
           <div class="avatar bg-light-success p-50 m-0">
@@ -53,7 +53,7 @@
       <div class="card">
         <div class="card-header">
           <div>
-            <h2 class="fw-bolder mb-0">ATIVO</h2>
+          <h2 class="fw-bolder mb-0">{{ strtoupper($statusConta) }}</h2>
             <p class="card-text">Status da Conta</p>
           </div>
           <div class="avatar bg-light-success p-50 m-0">
@@ -68,7 +68,7 @@
       <div class="card">
         <div class="card-header">
           <div>
-            <h2 class="fw-bolder mb-0">R$ 50,00</h2>
+          <h2 class="fw-bolder mb-0">R$ {{ number_format($ultimoBonus, 2, ',', '.') }}</h2>
             <p class="card-text">Último Bônus</p>
           </div>
           <div class="avatar bg-light-success p-50 m-0">
@@ -83,7 +83,7 @@
       <div class="card">
         <div class="card-header">
           <div>
-            <h2 class="fw-bolder mb-0">R$ 800,00</h2>
+          <h2 class="fw-bolder mb-0">R$ {{ number_format($totalBonus, 2, ',', '.') }}</h2>
             <p class="card-text">Total em Bônus</p>
           </div>
           <div class="avatar bg-light-info p-50 m-0">
@@ -98,7 +98,7 @@
       <div class="card">
         <div class="card-header">
           <div>
-            <h2 class="fw-bolder mb-0">2</h2>
+          <h2 class="fw-bolder mb-0">{{ $saquesPendentes }}</h2>
             <p class="card-text">Saques Pendentes</p>
           </div>
           <div class="avatar bg-light-danger p-50 m-0">
@@ -113,7 +113,7 @@
       <div class="card">
         <div class="card-header">
           <div>
-            <h2 class="fw-bolder mb-0">R$ 300,00</h2>
+          <h2 class="fw-bolder mb-0">R$ {{ number_format($saquesPagos, 2, ',', '.') }}</h2>
             <p class="card-text">Saques Pagos</p>
           </div>
           <div class="avatar bg-light-info p-50 m-0">
@@ -128,7 +128,7 @@
       <div class="card">
         <div class="card-header">
           <div>
-            <h2 class="fw-bolder mb-0">0</h2>
+          <h2 class="fw-bolder mb-0">{{ $diretosAtivos }}</h2>
             <p class="card-text">Diretos Ativos</p>
           </div>
           <div class="avatar bg-light-success p-50 m-0">
@@ -143,7 +143,7 @@
       <div class="card">
         <div class="card-header">
           <div>
-            <h2 class="fw-bolder mb-0">0</h2>
+          <h2 class="fw-bolder mb-0">{{ $diretosPendentes }}</h2>
             <p class="card-text">Diretos Pendentes</p>
           </div>
           <div class="avatar bg-light-danger p-50 m-0">
@@ -158,7 +158,7 @@
       <div class="card">
         <div class="card-header">
           <div>
-            <h2 class="fw-bolder mb-0">1</h2>
+          <h2 class="fw-bolder mb-0">{{ $faturasPendentes }}</h2>
             <p class="card-text">Faturas Pendentes</p>
           </div>
           <div class="avatar bg-light-warning p-50 m-0">
@@ -173,7 +173,7 @@
       <div class="card">
         <div class="card-header">
           <div>
-            <h2 class="fw-bolder mb-0">3</h2>
+          <h2 class="fw-bolder mb-0">{{ $contasNasFases }}</h2>
             <p class="card-text">Contas nas Fases</p>
           </div>
           <div class="avatar bg-light-info p-50 m-0">
@@ -188,7 +188,7 @@
       <div class="card">
         <div class="card-header">
           <div>
-            <h2 class="fw-bolder mb-0">Fase 2 de 3</h2>
+          <h2 class="fw-bolder mb-0">{{ $faseAtual }}</h2>
             <p class="card-text">Fase Atual</p>
           </div>
           <div class="avatar bg-light-primary p-50 m-0">
@@ -203,7 +203,7 @@
       <div class="card">
         <div class="card-header">
           <div>
-            <h2 class="fw-bolder mb-0">5</h2>
+          <h2 class="fw-bolder mb-0">{{ $celulasAtivas }}</h2>
             <p class="card-text">Células Ativas</p>
           </div>
           <div class="avatar bg-light-primary p-50 m-0">
@@ -221,46 +221,43 @@
           <h4 class="card-title">Faturas Pendentes</h4>
         </div>
         <div class="card-body">
-          <div class="table-responsive">
-            <table class="table table-striped">
-              <thead>
+        <div class="table-responsive">
+  <table class="table table-striped">
+    <thead>
+      <tr>
+        <th>ID</th>
+        <th>Valor</th>
+        <th>Status</th>
+        <th>Data</th>
+        <th>Ações</th>
+      </tr>
+    </thead>
+    <tbody>
+            @forelse ($faturasPendentesLista as $fatura)
                 <tr>
-                  <th>ID</th>
-                  <th>Valor</th>
-                  <th>Data</th>
-                  <th>Ações</th>
+                <td>#{{ $fatura->id }}</td>
+                <td>R$ {{ number_format($fatura->amount, 2, ',', '.') }}</td>
+                <td>{{ strtoupper($fatura->status) }}</td>
+                <td>{{ $fatura->created_at->format('d/m/Y H:i') }}</td>
+                <td>
+                    <form action="/faturas/pagar-usdt/{{ $fatura->id }}" method="POST" style="display:inline-block">
+                    @csrf
+                    <button type="submit" class="btn btn-success btn-sm">Pagar em USDT</button>
+                    </form>
+                    <form action="/faturas/excluir/{{ $fatura->id }}" method="POST" style="display:inline-block" onsubmit="return confirm('Deseja realmente excluir esta fatura?')">
+                    @csrf
+                    <button type="submit" class="btn btn-danger btn-sm">Excluir</button>
+                    </form>
+                </td>
                 </tr>
-              </thead>
-              <tbody>
+            @empty
                 <tr>
-                  <td>#001</td>
-                  <td>R$ 100,00</td>
-                  <td>05/05/2025</td>
-                  <td>
-                    <form action="/faturas/pagar-usdt/001" method="POST" style="display:inline-block">
-                      <button type="submit" class="btn btn-success btn-sm">Pagar em USDT</button>
-                    </form>
-                    <form action="/faturas/excluir/001" method="POST" style="display:inline-block" onsubmit="return confirm('Deseja realmente excluir esta fatura?')">
-                      <button type="submit" class="btn btn-danger btn-sm">Excluir</button>
-                    </form>
-                  </td>
+                <td colspan="5" class="text-center">Nenhuma fatura pendente.</td>
                 </tr>
-                <tr>
-                  <td>#002</td>
-                  <td>R$ 150,00</td>
-                  <td>06/05/2025</td>
-                  <td>
-                    <form action="/faturas/pagar-usdt/002" method="POST" style="display:inline-block">
-                      <button type="submit" class="btn btn-success btn-sm">Pagar em USDT</button>
-                    </form>
-                    <form action="/faturas/excluir/002" method="POST" style="display:inline-block" onsubmit="return confirm('Deseja realmente excluir esta fatura?')">
-                      <button type="submit" class="btn btn-danger btn-sm">Excluir</button>
-                    </form>
-                  </td>
-                </tr>
-              </tbody>
-            </table>
-          </div>
+            @endforelse
+            </tbody>
+        </table>
+        </div>
         </div>
       </div>
     </div>

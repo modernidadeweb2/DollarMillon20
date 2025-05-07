@@ -1,49 +1,70 @@
 <?php
 
 namespace App\Http\Controllers;
+use App\Models\User;
+use App\Models\Bonus; // ou Bonificacao, se for esse o nome
+
 
 use Illuminate\Support\Facades\Auth;
 
 class DashboardController extends Controller
 {
     public function index()
-    {
-        $user = Auth::user();
+{
+    $user = Auth::user();
 
-        // Buscar saldo da tabela balances (caso não exista, assume 0)
-        $balance = $user->balance->amount ?? 0;
+    $balance = $user->balance->amount ?? 0;
 
-        // Carrega filhos e netos para montar a árvore
-        $children = $user->children()->with('children')->get();
+    $children = $user->children()->with('children')->get();
+    $tree = view('partials.tree', compact('children'))->render();
 
-        // Função auxiliar para montar a árvore 3x2
-        $tree = view('partials.tree', compact('children'))->render();
+    $statusConta = $user->status ?? 'INATIVO';
 
-        return view('dashboard', compact('balance', 'tree'));
-    }
+    $ultimoBonus = $user->bonus()->latest()->first()?->valor ?? 0;
 
-    private function gerarArvore($user)
-    {
-        $filhosDiretos = $user->children()->take(3)->get();
-        $html = '<ul>';
+    $totalBonus = $user->bonus()->sum('valor');
 
-        foreach ($filhosDiretos as $filho) {
-            $html .= '<li>' . $filho->name;
+    $saquesPendentes = $user->withdrawals()->where('status', 'pendente')->count();
 
-            $filhosDoFilho = $filho->children()->take(3)->get();
-            if ($filhosDoFilho->count()) {
-                $html .= '<ul>';
-                foreach ($filhosDoFilho as $neto) {
-                    $html .= '<li>' . $neto->name . '</li>';
-                }
-                $html .= '</ul>';
-            }
+    $saquesPagos = $user->withdrawals()->where('status', 'pago')->sum('amount');
 
-            $html .= '</li>';
-        }
+    $diretosAtivos = User::where('sponsor_id', $user->id)
+    ->where('status', 'ativo')->count();
 
-        $html .= '</ul>';
-        return $html;
-    }
+    $diretosPendentes = User::where('sponsor_id', $user->id)
+    ->where('status', 'pendente')->count();
+
+    // Faturas
+    $faturasPendentes = $user->invoices()->where('status', 'pending')->count();
+    $faturasPendentesLista  = $user->invoices()->where('status', 'pending')->get();
+
+    // Fase atual e total de fases
+    $faseAtual = $user->current_phase ?? 'Phase 1';
+    $contasNasFases = $user->userPhases()->count();
+
+    // Posições na matriz
+    $activeMatrixPositions = $user->matriz()->where('active', true)->count();
+
+    $celulasAtivas = $user->matriz()->where('active', true)->count();
+
+    return view('dashboard', compact(
+        'balance',
+        'tree',
+        'statusConta',
+        'ultimoBonus',
+        'totalBonus',
+        'saquesPendentes',
+        'saquesPagos',
+        'diretosAtivos',
+        'diretosPendentes',
+        'faturasPendentes',
+        'faseAtual',
+        'contasNasFases',
+        'celulasAtivas',
+        'faturasPendentesLista'
+    ));
+}
+
+    
 
 }

@@ -9,7 +9,9 @@ return new class extends Migration
     public function up(): void
 {
     Schema::table('users', function (Blueprint $table) {
-        $table->string('username')->nullable()->after('name'); // sem unique por enquanto
+        if (!Schema::hasColumn('users', 'username')) {
+            $table->string('username')->nullable()->after('name');
+        }
     });
 
     // Após adicionar a coluna, preencha com valores únicos fictícios
